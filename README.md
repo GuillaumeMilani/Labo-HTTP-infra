@@ -62,3 +62,32 @@ To reach the goal, a script called `location.js` has been created in `docker-ima
 Follow instructions from the precedent steps to rebuilt Docker images from the Step 4 branch and run the containers.
 
 Tip : use `docker rm $(docker ps -a -q)` to remove the previously built images.
+
+# Step 5: Dynamic reverse proxy configuration
+In this final step, the reverse proxy image is modified to fetch the IP addresses from environment variables. This way, it's now possible to provide the IPs as parameter when running the reverse proxy's container. The sources are available on `master` branch.
+
+To make this possible, a new folder `templates/` has been created in the reverse proxy image's folder. This folder contains a PHP script named `config-template.php` that will be in charge of reading the two environment variables `DYNAMIC_APP` and `STATIC_APP` and generate the `001-reverse-proxy.conf` file previously created in [step 3](#step-3-reverse-proxy-with-apache-static-configuration). The PHP script is called in the `apache2-foreground` script, created by the official Apache2+PHP5.6 image's team.
+
+## Instructions
+Here is a summary of the commands to build up the whole system :
+```
+ # Build the image of Step 1 and run a container
+ docker build -t res/apache_php docker-images/apache-php-image/
+ docker run -d --name apache-php res/apache_php
+
+ # Build the image of Step 2 and run a container
+ docker build -t res/express_dynamic docker-images/express-image/
+ docker run -d --name express-dynamic res/express_dynamic
+
+ # Build the image of Step 3 and run a container
+ docker build -t res/apache_rp docker-images/apache-reverse-proxy/
+ docker run -d --name apache-rp res/apache_rp \
+     -e STATIC_APP=<ip of apache-php>:80 \
+     -e DYNAMIC_APP=<ip of express-dynamic>:3000 \
+     res/apache_rp
+
+ # Redirect demo.res.ch to the reverse proxy
+ echo "<ip of apache-rp>  demo.res.ch" >> /etc/hosts
+```
+
+You can now reach the dynamic website at [http://demo.res.ch/](http://demo.res.ch/)

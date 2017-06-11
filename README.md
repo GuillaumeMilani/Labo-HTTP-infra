@@ -69,7 +69,7 @@ In this final step, the reverse proxy image is modified to fetch the IP addresse
 To make this possible, a new folder `templates/` has been created in the reverse proxy image's folder. This folder contains a PHP script named `config-template.php` that will be in charge of reading the two environment variables `DYNAMIC_APP` and `STATIC_APP` and generate the `001-reverse-proxy.conf` file previously created in [step 3](#step-3-reverse-proxy-with-apache-static-configuration). The PHP script is called in the `apache2-foreground` script, created by the official Apache2+PHP5.6 image's team.
 
 ## Instructions
-Here is a summary of the commands to build up the whole system :
+Here is a summary of the commands to build up the whole system from `master` :
 ```
  # Build the image of Step 1 and run a container
  docker build -t res/apache_php docker-images/apache-php-image/
